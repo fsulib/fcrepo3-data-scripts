@@ -30,3 +30,9 @@ function create_mlocate_db($type) {
       echo "{$type} is not a supported option.\n";
   }
 }
+
+function get_directory_contents($directory) {
+  $contents = scandir($directory);
+  $filter = array('.', '..');
+  return array_diff($contents, $filter);
+}
