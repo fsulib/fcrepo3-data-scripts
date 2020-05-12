@@ -36,3 +36,8 @@ function get_directory_contents($directory) {
   $filter = array('.', '..');
   return array_diff($contents, $filter);
 }
+
+function get_namespace_from_uri($uri) {
+  preg_match('/info%3Afedora%2F(.*)%3A.*/', $uri, $result);
+  return $result[1];
+}
