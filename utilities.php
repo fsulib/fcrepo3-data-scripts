@@ -38,7 +38,8 @@ function get_directory_contents($directory) {
 }
 
 function get_namespace_from_uri($uri) {
-  return preg_match('/info%3Afedora%2F(.*)%3A.*/', $uri, $result)[1];
+  preg_match('/info%3Afedora%2F(.*)%3A.*/', $uri, $result);
+  return $result[1];
 }
 
 function uri_prefix_strip($uri) {
@@ -53,21 +54,24 @@ function extract_data_from_object($path_to_object_uri) {
     if ($child->getName() == 'objectProperties') {
       $properties = $child->children('foxml', TRUE);
       foreach ($properties as $property) {
-        if ($property->attributes()['NAME']->__toString() == 'info:fedora/fedora-system:def/model#label') {
-          $data['label'] = $property->attributes()['VALUE']->__toString();
+        $property_attributes = $property->attributes();
+        if ($property_attributes['NAME']->__toString() == 'info:fedora/fedora-system:def/model#label') {
+          $data['label'] = $property_attributes['VALUE']->__toString();
         }
       }
     } 
     elseif ($child->getName() == 'datastream') {
-      if ($child->attributes()['ID']->__toString() == 'RELS-EXT') {
+      $child_attributes = $child->attributes();
+      if ($child_attributes['ID']->__toString() == 'RELS-EXT') {
         $rels_ext = $child->datastreamVersion->xmlContent->children('rdf', TRUE)->RDF->Description;
         $data['parent'] = uri_prefix_strip($rels_ext->children('fedora', TRUE)->isMemberOf->attributes('rdf', TRUE)->resource->__toString());
         $data['cmodel'] = uri_prefix_strip($rels_ext->children('fedora-model', TRUE)->hasModel->attributes('rdf', TRUE)->resource->__toString());
       }
-      else if ($child->attributes()['CONTROL_GROUP']->__toString() == 'M') {
+      else if ($child_attributes['CONTROL_GROUP']->__toString() == 'M') {
         $datastream_versions = $child->children('foxml', TRUE);
         foreach ($datastream_versions as $datastream_version) {
-          $data['datastreams'][] = $datastream_version->contentLocation->attributes()['REF']->__toString();
+          $content_location_attributes = $datastream_version->contentLocation->attributes();
+          $data['datastreams'][] = $content_location_attributes['REF']->__toString();
         }
       }
     }
