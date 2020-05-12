@@ -38,6 +38,40 @@ function get_directory_contents($directory) {
 }
 
 function get_namespace_from_uri($uri) {
-  preg_match('/info%3Afedora%2F(.*)%3A.*/', $uri, $result);
-  return $result[1];
+  return preg_match('/info%3Afedora%2F(.*)%3A.*/', $uri, $result)[1];
+}
+
+function uri_prefix_strip($uri) {
+  return str_replace('info:fedora/', '', $uri);
+}
+
+function extract_data_from_object($path_to_object_uri) {
+  $data = array();
+  $data['datastreams'] = array();
+  $object = simplexml_load_string(file_get_contents($path_to_object_uri));
+  foreach ($object->children('foxml', TRUE) as $child) {
+    if ($child->getName() == 'objectProperties') {
+      $properties = $child->children('foxml', TRUE);
+      foreach ($properties as $property) {
+        if ($property->attributes()['NAME']->__toString() == 'info:fedora/fedora-system:def/model#label') {
+          $data['label'] = $property->attributes()['VALUE']->__toString();
+        }
+      }
+    } 
+    elseif ($child->getName() == 'datastream') {
+      if ($child->attributes()['ID']->__toString() == 'RELS-EXT') {
+        $rels_ext = $child->datastreamVersion->xmlContent->children('rdf', TRUE)->RDF->Description;
+        $data['parent'] = uri_prefix_strip($rels_ext->children('fedora', TRUE)->isMemberOf->attributes('rdf', TRUE)->resource->__toString());
+        $data['cmodel'] = uri_prefix_strip($rels_ext->children('fedora-model', TRUE)->hasModel->attributes('rdf', TRUE)->resource->__toString());
+      }
+      else if ($child->attributes()['CONTROL_GROUP']->__toString() == 'M') {
+        $datastream_versions = $child->children('foxml', TRUE);
+        foreach ($datastream_versions as $datastream_version) {
+          $data['datastreams'][] = $datastream_version->contentLocation->attributes()['REF']->__toString();
+        }
+      }
+    }
+  }
+  $data['pid'] = $object['PID']->__toString();
+  return $data;
 }
