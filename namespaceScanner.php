@@ -11,7 +11,7 @@ $children = get_directory_contents($fedora_objectstore);
 foreach ($children as $child) {
   $subchildren = get_directory_contents("{$fedora_objectstore}/{$child}");
   foreach ($subchildren as $subchild) {
-    $uri_namespace = get_namespace_from_uri($subchild);
+    $uri_namespace = get_namespace_from_object_uri($subchild);
     foreach ($namespaces as $namespace) {
       if ($uri_namespace == $namespace) {
         $counts[$namespace]++;
