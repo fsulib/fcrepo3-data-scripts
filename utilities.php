@@ -75,3 +75,8 @@ function extract_data_from_object($path_to_object_uri) {
   $data['pid'] = $object['PID']->__toString();
   return $data;
 }
+
+function load_file_to_array($file_path) {
+  $array = file($file_path, FILE_IGNORE_NEW_LINES);
+  return $array;
+}
