@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-require 'utilities.php';
+require '../includes/utilities.php';
 
 $counts = array('total' => 0);
 foreach ($namespaces as $namespace) {

@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-require 'utilities.php';
+require '../includes/utilities.php';
 
 $children = get_directory_contents($fedora_objectstore);
 foreach ($children as $child) {
