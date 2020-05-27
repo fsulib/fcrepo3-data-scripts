@@ -4,10 +4,20 @@ date_default_timezone_set('America/New_York');
 
 function logmsg($text) {
   global $log;
-  $time = date('D Y-m-d H:i', time());
+  echo $log;
+  $time = date('D Y-m-d H:i:s', time());
   $text = "{$time} - {$text}";
   echo "{$text}\n";
   shell_exec("echo {$text} >> {$log}");
+}
+
+function create_output_home_directory() {
+  global $output_home;
+  $time = date('Y-m-d_H-i-s', time());
+  shell_exec("cd {$output_home}; mkdir {$time}");
+  $output_dir = "{$output_home}/{$time}";
+  shell_exec("cd {$output_dir}; mkdir objectStore; mkdir datastreamStore; touch log.txt");
+  return $output_dir;
 }
 
 function create_mlocate_object_db() {
@@ -58,6 +68,12 @@ function uri_prefix_strip($uri) {
 
 function uri_prefix_add($uri) {
   return "info:fedora/" . $uri;
+}
+
+function uri_to_pid($uri) {
+  $uri = str_replace('info%3Afedora%2F', '', $uri);
+  $uri = str_replace('%3A', ':', $uri);
+  return $uri;
 }
 
 function extract_data_from_object($path_to_object_uri) {
