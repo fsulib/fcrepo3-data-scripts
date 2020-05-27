@@ -10,29 +10,35 @@ function logmsg($text) {
   shell_exec("echo {$text} >> {$log}");
 }
 
-function create_mlocate_db($type) {
-  switch ($type) {
-    case "objects":
-      global $objects_mlocatedb;
-      logmsg("Indexing Fedora objectStore...");
-      shell_exec("updatedb -v -U /data/objectStore -o {$objects_mlocatedb}");
-      logmsg("Fedora objectStore indexed to {$objects_mlocatedb}.");
-      break;
-    case "datastreams":
-      global $datastreams_mlocatedb;
-      logmsg("Indexing Fedora datastreamStore...");
-      shell_exec("updatedb -v -U /data/datamp -o {$datastreams_mlocatedb}");
-      logmsg("Fedora datastreamStore indexed to {$datastreams_mlocatedb}.");
-      break;
-    default:
-      echo "{$type} is not a supported option.\n";
-  }
+function create_mlocate_object_db() {
+  global $objects_mlocatedb;
+  logmsg("Indexing Fedora objectStore...");
+  shell_exec("updatedb -v -U /data/objectStore -o {$objects_mlocatedb}");
+  logmsg("Fedora objectStore indexed to {$objects_mlocatedb}.");
+}
+
+function create_mlocate_datastream_db() {
+  global $datastreams_mlocatedb;
+  logmsg("Indexing Fedora datastreamStore...");
+  shell_exec("updatedb -v -U /data/datamp -o {$datastreams_mlocatedb}");
+  logmsg("Fedora datastreamStore indexed to {$datastreams_mlocatedb}.");
 }
 
 function get_directory_contents($directory) {
   $contents = scandir($directory);
   $filter = array('.', '..');
   return array_diff($contents, $filter);
+}
+
+function get_subset_filtered_directory_contents($directory, $subsetfile) {
+  $contents = get_directory_contents($directory);
+  $subset = load_subset_file($subsetfile);
+  return array_intersect($contents, $subset);
+}
+
+function load_subset_file($file_path) {
+  $array = file($file_path, FILE_IGNORE_NEW_LINES);
+  return $array;
 }
 
 function get_namespace_from_object_uri($uri) {
@@ -88,9 +94,4 @@ function extract_data_from_object($path_to_object_uri) {
   }
   $data['pid'] = $object['PID']->__toString();
   return $data;
-}
-
-function load_file_to_array($file_path) {
-  $array = file($file_path, FILE_IGNORE_NEW_LINES);
-  return $array;
 }
