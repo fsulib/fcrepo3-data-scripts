@@ -7,9 +7,7 @@ function logmsg($text) {
   $time = date('D Y-m-d H:i', time());
   $text = "{$time} - {$text}";
   echo "{$text}\n";
-  $logfile = fopen($log, 'a');
-  fwrite($logfile, "{$text}\n");
-  fclose($logfile);
+  shell_exec("echo {$text} >> {$log}");
 }
 
 function create_mlocate_db($type) {
@@ -50,6 +48,10 @@ function is_uri_in_desired_namespace($uri) {
 
 function uri_prefix_strip($uri) {
   return str_replace('info:fedora/', '', $uri);
+}
+
+function uri_prefix_add($uri) {
+  return "info:fedora/" . $uri;
 }
 
 function extract_data_from_object($path_to_object_uri) {
