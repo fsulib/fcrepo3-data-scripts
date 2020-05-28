@@ -2,10 +2,13 @@
 require 'variables.php';
 date_default_timezone_set('America/New_York');
 
-function logmsg($text) {
-  global $log;
-  echo $log;
-  $time = date('D Y-m-d H:i:s', time());
+function get_formatted_time() {
+  return date('Y-m-d_H-i-s', time());
+}
+
+function logmsg($text, $output_directory) {
+  $time = get_formatted_time();
+  $log = "{$output_directory}/log.txt";
   $text = "{$time} - {$text}";
   echo "{$text}\n";
   shell_exec("echo {$text} >> {$log}");
@@ -13,13 +16,15 @@ function logmsg($text) {
 
 function create_output_home_directory() {
   global $output_home;
-  $time = date('Y-m-d_H-i-s', time());
+  $time = get_formatted_time();
   shell_exec("cd {$output_home}; mkdir {$time}");
-  $output_dir = "{$output_home}/{$time}";
-  shell_exec("cd {$output_dir}; mkdir objectStore; mkdir datastreamStore; touch log.txt");
-  return $output_dir;
+  $output_directory = "{$output_home}/{$time}";
+  shell_exec("cd {$output_directory}; mkdir objectStore; mkdir datastreamStore; touch log.txt");
+  logmsg("Output directory created at {$output_directory}.", $output_directory);
+  return $output_directory;
 }
 
+/*
 function create_mlocate_object_db() {
   global $objects_mlocatedb;
   logmsg("Indexing Fedora objectStore...");
@@ -32,6 +37,16 @@ function create_mlocate_datastream_db() {
   logmsg("Indexing Fedora datastreamStore...");
   shell_exec("updatedb -v -U /data/datamp -o {$datastreams_mlocatedb}");
   logmsg("Fedora datastreamStore indexed to {$datastreams_mlocatedb}.");
+}
+*/
+
+function get_path_to_datastream($datastream_uri) {
+  $path_to_datastream = shell_exec("locate -d /data/fsudata2/lost+found/mlocatedbs/datastreams.db {$datastream_uri}");
+  $path_to_datastream = trim($path_to_datastream);
+  if (empty($path_to_datastream)) {
+    $path_to_datastream = "Error: Datastream {$datastream_uri} could not be located.";
+  }
+  return $path_to_datastream;
 }
 
 function get_directory_contents($directory) {
@@ -73,7 +88,9 @@ function uri_prefix_add($uri) {
 function datastream_to_uri($datastream) {
   $uri = uri_prefix_add($datastream);
   $uri = str_replace('+', '/', $uri);
-  return urlencode($uri);
+  $uri = urlencode($uri);
+  $uri = str_replace('_', '%5F', $uri);
+  return $uri;
 }
 
 function uri_to_pid($uri) {
@@ -116,4 +133,24 @@ function extract_data_from_object($path_to_object_uri) {
   }
   $data['pid'] = $object['PID']->__toString();
   return $data;
+}
+
+function copy_object($object_uri_path, $output_directory) {
+  $exploded_path = explode('/', $object_uri_path);
+  $parent_directory = $exploded_path[3];
+  $object_uri = $exploded_path[4];
+  $object_copy_path = "{$output_directory}/objectStore/{$parent_directory}/";
+  shell_exec("mkdir -p {$object_copy_path}");
+  shell_exec("cp {$object_uri_path} {$object_copy_path}/{$object_uri}");
+  logmsg("Object {$object_uri} copied from {$object_uri_path} to {$object_copy_path}/{$object_uri}", $output_directory);
+}
+
+function copy_datastream($datastream_uri_path, $output_directory) {
+  $exploded_path = explode('/', $datastream_uri_path);
+  $parent_directories = "{$exploded_path[4]}/{$exploded_path[5]}/{$exploded_path[6]}";
+  $datastream_uri = $exploded_path[7];
+  $datastream_copy_path = "{$output_directory}/datastreamStore/{$parent_directories}/";
+  shell_exec("mkdir -p {$datastream_copy_path}");
+  shell_exec("cp {$datastream_uri_path} {$datastream_copy_path}/{$datastream_uri}");
+  logmsg("Datastream {$datastream_uri} copied from {$datastream_uri_path} to {$datastream_copy_path}/{$datastream_uri}", $output_directory);
 }

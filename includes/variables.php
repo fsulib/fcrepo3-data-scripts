@@ -1,7 +1,6 @@
 <?php
 
 $scripts_home = '/root/fcrepo3-data-scripts';
-$log = '/root/fcrepo3-data-scripts/log.txt';
 
 $namespaces = array('fsu', 'islandora');
 
