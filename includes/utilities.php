@@ -70,7 +70,7 @@ function uri_prefix_add($uri) {
   return "info:fedora/" . $uri;
 }
 
-function datastream_convert_to_uri($datastream) {
+function datastream_to_uri($datastream) {
   $uri = uri_prefix_add($datastream);
   $uri = str_replace('+', '/', $uri);
   return urlencode($uri);
