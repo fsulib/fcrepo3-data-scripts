@@ -41,7 +41,7 @@ function create_mlocate_datastream_db() {
 */
 
 function get_path_to_datastream($datastream_uri) {
-  $path_to_datastream = shell_exec("locate -d /data/fsudata2/lost+found/mlocatedbs/datastreams.db {$datastream_uri}");
+  $path_to_datastream = shell_exec("locate -n 1 -d /data/fsudata2/lost+found/mlocatedbs/datastreams.db {$datastream_uri}");
   $path_to_datastream = trim($path_to_datastream);
   if (empty($path_to_datastream)) {
     $path_to_datastream = "Error: Datastream {$datastream_uri} could not be located.";

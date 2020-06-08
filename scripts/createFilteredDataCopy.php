@@ -5,7 +5,7 @@ require '../includes/utilities.php';
 $output_directory = create_output_home_directory();
 $object_directories = get_directory_contents($fedora_objectstore);
 foreach ($object_directories as $object_directory) {
-  $object_uris = get_subset_filtered_directory_contents("{$fedora_objectstore}/{$object_directory}", '../subsets/demo-subset-simple.txt');
+  $object_uris = get_subset_filtered_directory_contents("{$fedora_objectstore}/{$object_directory}", '../subsets/demo-subset-all.txt');
   foreach ($object_uris as $object_uri) {
     $object_uri_path = "{$fedora_objectstore}/{$object_directory}/{$object_uri}";
     $pid_data = extract_data_from_object($object_uri_path);
